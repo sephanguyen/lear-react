@@ -4,8 +4,9 @@ import PropTypes from 'prop-types';
 import Cart from '../components/Cart'
 import CartItem from '../components/CartItem'
 import CartResult from '../components/CartResult'
-
+import { isEmpty } from 'lodash';
 import * as Message from '../constants/Message'
+import { actRemoveProductInCart, actChangeMessage, actChangeQuantityItemInCart } from '../actions';
 
 
 
@@ -13,22 +14,39 @@ class CartContainer extends Component {
     render() {
         const { cart } = this.props;
         return (
-           <Cart> 
-               { this.showCartItem(cart) }
-               { this.showTotalAmount(cart)}
-           </Cart>
+            <div>
+                { this.showCart(cart) }
+            </div>
         );
     }
 
-    showCartItem = (cart) => {
-        if(cart) {
-            return cart.map((cartItem, index) => {
-                return <CartItem key = {index} cartItem = {cartItem}/>;
-            })
-        } else {
+    showCart = (cart) => {
+        if(!isEmpty(cart)) {
+            return (<Cart> 
+                { this.showCartItem(cart) }
+                { this.showTotalAmount(cart)}
+            </Cart>)
+        }
+        else {
             return Message.MSG_CART_EMPTY;
         }
+    };
+
+    showCartItem = (cart) => {
+        if(cart) {
+            let { onDeleteItemInCart, onChangeMessage, onChangeQuantityItemInCart } = this.props;
+
+            return cart.map((cartItem, index) => {
+                return <CartItem 
+                        key = {index} 
+                        cartItem = {cartItem}
+                        onDeleteItemInCart = { onDeleteItemInCart }
+                        onChangeMessage = {onChangeMessage}
+                        onChangeQuantityItemInCart = { onChangeQuantityItemInCart }/>;
+            })
+        }
     }
+
 
     showTotalAmount = (cart) => {
         if(cart) {
@@ -56,8 +74,11 @@ CartContainer.propTypes = {
                 rating: PropTypes.number
             }).isRequired,
             quantity: PropTypes.number.isRequired
-        }).isRequired
-    )
+        }).isRequired,
+    ),
+    onDeleteItemInCart : PropTypes.func.isRequired,
+    onChangeMessage : PropTypes.func.isRequired,
+    onChangeQuantityItemInCart : PropTypes.func.isRequired
 }
 
 
@@ -67,4 +88,18 @@ const mapStateToProps = state => {
     }
 }
 
-export default connect(mapStateToProps)(CartContainer);
+const mapDispatchToProps = (dispatch) => {
+    return {
+        onDeleteItemInCart : (id) => {
+            dispatch(actRemoveProductInCart(id));
+        },
+        onChangeMessage : (message) => {
+            dispatch(actChangeMessage(message))
+        },
+        onChangeQuantityItemInCart : (id, quantity) => {
+            dispatch(actChangeQuantityItemInCart(id, quantity));
+        }
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(CartContainer);

@@ -1,42 +1,48 @@
 import * as types from '../constants/ActionType'
-import { find } from 'lodash'
-
+import { find, remove } from 'lodash'
 var data = JSON.parse(localStorage.getItem('CART'));
 
-// var inittialState = data ? data : [];
+var inittialState = data ? data : [];
 
-var inittialState = [{
-    product: {
-        id: 1,
-        name: 'Iphone 7 plus',
-        image: 'https://store.storeimages.cdn-apple.com/4974/as-images.apple.com/is/image/AppleInc/aos/published/images/H/H0/HH0H2/HH0H2?wid=445&hei=445&fmt=jpeg&qlt=95&op_sharpen=0&resMode=bicub&op_usm=0.5,0.5,0,0&iccEmbed=0&layer=comp&.v=K7ik72',
-        description: 'San pham apple san xuat',
-        price: 700,
-        inventory: 20,
-        rating: 5
-    },
-    quantity: 5
-},{
-    product:  {
-        id : 2,
-        name : 'Samsung galaxy s7',
-        image : 'https://i.ebayimg.com/images/g/0hUAAOSwqURasIhf/s-l500.jpg',
-        description : 'San pham do sam sung san xuat',
-        price : 400,
-        inventory : 10,
-        rating: 3
-    },
-    quantity: 5
-}]
 
 const cart = (state = inittialState, action) => {
     switch (action.type) {
         case types.ADD_TO_CART:
-            console.log(action);
-            // let itemAdd = find(state, function(item) { return item.product.id === action.product.id});
-            // if(itemAdd) {
-            //     itemAdd.product.quantity++;
-            // }
+            let { product, quantity } = action;
+
+            let findItem = find(state, function (item) { return item.product.id === product.id });
+            if (findItem) {
+                findItem.quantity += quantity;
+            }
+            else {
+                state.push({
+                    product,
+                    quantity
+                });
+            }
+            localStorage.setItem('CART', JSON.stringify(state));
+            return [...state];
+        case types.DELETE_PRODUCT_IN_CART: 
+
+            let { idItemDelete } = action;
+            
+            remove(state, function(item) { return item.product.id === idItemDelete})
+
+            localStorage.setItem('CART', JSON.stringify(state));
+            return [...state];
+        case types.CHANGE_QUANTITY_ITEM_IN_CART: 
+            
+            let { idItem, quantityChange } = action;
+            let findItemChange = find(state, function (item) { return item.product.id === idItem });
+
+            if (findItemChange) {
+                findItemChange.quantity += quantityChange;
+                if(findItemChange.quantity <= 0) {
+                    remove(state, function(item) { return item.product.id === idItem})
+                }
+            }
+            
+            localStorage.setItem('CART', JSON.stringify(state));
             return [...state];
         default: return [...state];
     }
