@@ -1,26 +1,38 @@
 import React, { Component } from 'react';
-import ProductsContainer from './containers/ProductsContainer';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import MessageContainer from './containers/MessageContainer';
-import CartContainer from './containers/CartContainer';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+
+import routes from './routes';
+import Menu from './components/Menu/Menu';
 
 class App extends Component {
-  render() {
-    return (
-      <div>
-        <Header />
-        <main id="mainContainer">
-          <div className="container">
-            <ProductsContainer />
-            <MessageContainer />
-            <CartContainer />
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+    render() {
+        return (
+            <Router>
+                <div className="App">
+                    <Menu />
+                    {this.showContentMenus(routes)}
+                </div>
+            </Router>
+        );
+    }
+
+    showContentMenus = (routes) => {
+        var result = null;
+        if (routes.length > 0) {
+            result = routes.map((route, index) => {
+                return (
+                    <Route
+                        key={index}
+                        path={route.path}
+                        exact={route.exact}
+                        component={route.main}
+                    />
+                );
+            });
+        }
+        return <Switch>{result}</Switch>;
+    }
+
 }
 
 export default App;
